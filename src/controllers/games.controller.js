@@ -14,6 +14,7 @@ export async function getGames(req, res) {
 export async function postGame(req, res) {
 
     const {name, image, stockTotal, pricePerDay} = req.body;
+    if (!name || !image || !stockTotal || !pricePerDay) return res.sendStatus(400)
 
     try {
         const game = await db.query(`SELECT * FROM games WHERE name = $1`, [name])
