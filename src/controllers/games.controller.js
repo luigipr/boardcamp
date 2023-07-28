@@ -1,4 +1,4 @@
-import db from "../db/db.js"
+import {db} from "../db/database.connection.js"
 
 
 export async function getGames(req, res) {
@@ -13,19 +13,19 @@ export async function getGames(req, res) {
 
 export async function postGame(req, res) {
 
-    const {id, name, image, stockTotal, pricePerDay} = req.body;
+    const {name, image, stockTotal, pricePerDay} = req.body;
 
     try {
-        const game = await db.query(`SELECT * FROM games WHERE name = ${name}`)
-        if (game) return res.sendStatus(409)
+        const game = await db.query(`SELECT * FROM games WHERE name = $1`, [name])
+        console.log(game)
+        if (game.rowCount !== 0) return res.sendStatus(409)
 
-        const newgame = await db.query(`INSERT INTO games (id, name, image, stockTotal, pricePerDay) VALUES ($1, $2, $3, $4, $5)`, [id, name, image, stockTotal, pricePerDay])
+        await db.query(`INSERT INTO games (name, image, "stockTotal", "pricePerDay") VALUES ($1, $2, $3, $4)`, 
+        [name, image, stockTotal, pricePerDay])
         res.sendStatus(201)
     }
-    catch {
+    catch (err) {
         res.status(500).send(err.message)
     }
-    
-    
 }
 

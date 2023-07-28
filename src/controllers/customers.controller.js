@@ -1,4 +1,4 @@
-import db from "../db/db.js"
+import {db} from "../db/database.connection.js"
 
 
 export async function getCustomers(req, res) {
@@ -24,18 +24,31 @@ export async function getCustomerById(req, res) {
 
 export async function postCustomer(req, res) {
 
-    const {id, name, phone, cpf, birthday} = req.body;
+    const {name, phone, cpf, birthday} = req.body;
+    try {
+    const existe = await db.query(`SELECT * FROM customers WHERE cpf = customers.$1`, [cpf])
+    if (existe.rowCount !== 0) return res.sendStatus(409)
 
-    await db.query(`INSERT INTO customers (id, name, phone, cpf, birthday) VALUES ($1, $2, $3, $4, $5)`, [id, name, phone, cpf, birthday])
+    await db.query(`INSERT INTO customers (name, phone, cpf, birthday) VALUES ($1, $2, $3, $4)`, [name, phone, cpf, birthday])
 
-    res.send("postCustomer")
+    res.sendStatus(201)
+    } catch (err) {
+    res.status(500).send(err.message)
+    }
 }
 
 export async function putCustomer(req, res) {
     const { id } = req.params
 
-    const {id, name, phone, cpf, birthday} = req.body;
+    try {
+    const {name, phone, cpf, birthday} = req.body;
+    
+    const existe = await db.query(`SELECT * FROM customers WHERE cpf = customers.$1`, [cpf])
+    if (existe.rowCount !== 0) return res.sendStatus(409)
 
     await db.query(`UPDATE customers SET (name = $2, phone = $3, cpf = $4, birthday = $5) WHERE id = $1`, [id, name, phone, cpf, birthday])
-
+    res.sendStatus(200)
+    }catch (err) {
+        res.status(500).send(err.message)
+    }
 }
