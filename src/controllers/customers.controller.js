@@ -1,4 +1,5 @@
 import {db} from "../db/database.connection.js"
+import dayjs from "dayjs";
 
 
 export async function getCustomers(req, res) {
@@ -36,11 +37,12 @@ export async function postCustomer(req, res) {
     //const existe = await db.query(`SELECT * FROM customers WHERE customers.cpf = ${cpf}`)
     //if (existe.rowCount !== 0) return res.sendStatus(409)
     console.log(birthday)
-    const birthdayDate = birthday.split('T')[0];
+    const birthdayDate = dayjs(birthday).format('YYYY-MM-DD')
+    //birthday.split('T')[0];
     console.log(birthdayDate)
     
     await db.query(`INSERT INTO customers (name, phone, cpf, birthday) VALUES ($1, $2, $3, $4)`, [name, phone, cpf, birthdayDate])
-
+        //TO_CHAR(birthday, 'YYYY-MM-DD'))
     res.sendStatus(201)
     } catch (err) {
     res.status(500).send(err.message)
