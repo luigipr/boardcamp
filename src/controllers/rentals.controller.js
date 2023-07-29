@@ -27,7 +27,7 @@ export async function postRental(req, res) {
     try {
         const game = (await db.query(`SELECT * FROM games WHERE $1 = id`, [gameId])).rows
         console.log(game)
-        if(game.stockTotal <= 0) return res.sendStatus(400)
+        if(game[0].stockTotal <= 0) return res.sendStatus(400)
         if (!game) return res.sendStatus(400)
 
         const gamePrice = game[0].pricePerDay
@@ -60,3 +60,17 @@ export async function finishRental (req, res) {
     }   
 }
 
+export async function deleteRental(req, res) {
+    const {id} = req.params;
+
+    try {
+    if (!id) return res.sendStatus(404);
+    const rental = (await db.query(`SELECT * FROM rentals WHERE ${id} === id`)).rows;
+    if(rental[0].returnDate === null) return res.sendStatus(400)
+    
+    await db.query(`DELETE * FROM rentals WHERE $1 = id`, [id])
+    res.sendStatus(200)
+    } catch (err) {
+        res.status(500).send(err.message)
+    }   
+}
