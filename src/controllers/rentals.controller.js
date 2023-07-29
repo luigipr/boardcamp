@@ -1,16 +1,19 @@
 import {db} from "../db/database.connection.js"
-
+import dayjs from "dayjs"
 
 export async function getRentals(req, res) {
-
-
-
     try {
-        const resultado = await db.query(`
-        SELECT rentals.*, customers FROM customers JOIN customers ON customers.id = rentals."customerId" JOIN games ON 
-            games.id = rentals."gameId" `)
+        const rentals = await db.query(`
+        SELECT rentals.*, 
+        json_build_object('id', customers.id, 'name', customers.name) AS customer,
+        json_build_object('id', games.id, 'name', games.name) AS game
+        FROM rentals
+        JOIN customers ON rentals."customerId" = customers.id
+        JOIN games ON rentals."gameId" = games.id
+        `
+        )
 
-        res.send(resultado.rows)
+        res.send(rentals.rows)
     } catch (err) {
         res.status(500).send(err.message)
     }
@@ -18,31 +21,23 @@ export async function getRentals(req, res) {
 
 export async function postRental(req, res) {
     const {customerId, gameId, daysRented} = req.body
-    if (daysRented <= 0) return res.sendStatus(400)
     const rentDate = (dayjs().format('YYYY-MM-DD'));
+    console.log(customerId, gameId, daysRented, rentDate)
+
     try {
-        const game = await db.query(`SELECT * FROM games WHERE ${gameId} === games.id`)
+        const game = (await db.query(`SELECT * FROM games WHERE $1 = id`, [gameId])).rows
+        console.log(game)
         if(game.stockTotal <= 0) return res.sendStatus(400)
         if (!game) return res.sendStatus(400)
-        const gamePrice = game.pricePerDay
-        const originalPrice = gamePrice * rentDate;
-        let returnDate = null;
-        let delayFee = null
 
-       const customer = await db.query(`SELECT * FROM customers WHERE ${customerId} === games.id`)
-        if (!customer) return res.sendStatus(400)
+        const gamePrice = game[0].pricePerDay
+        const originalPrice = gamePrice * daysRented;
+        console.log(gamePrice, originalPrice)
+       const customer = await db.query(`SELECT * FROM customers WHERE $1 = id`, [customerId])
+        if (!customer) return res.sendStatus(400);
 
-        delete game.image;
-        delete game.stockTotal;
-        delete game.pricePerDay;
-        //game.delete(image, stockTotal, pricePerDay)
-        //customer.delete(phone, cpf. birthday)
-        delete customer.phone
-        delete customer.cpf
-        delete customer.birthday
-
-        await db.query(`INSERT INTO rentals "customerId", "gameId", "rentDate", "daysRented", "returnDate", "originalPrice", "delayFee", customer, game
-        VALUES ${customerId}, ${gameId}, ${rentDate}, ${daysRented}, ${returnDate}, ${originalPrice}, ${delayFee}, ${customer}, ${game} `)
+        await db.query(`INSERT INTO rentals ("customerId", "gameId", "rentDate", "daysRented", "returnDate", "originalPrice", "delayFee" )
+        VALUES ($1, $2, $3, $4, $5, $6, $7);`, [customerId, gameId, rentDate, daysRented, null, originalPrice, null]);
 
         res.sendStatus(201);
     }catch (err) {
@@ -59,8 +54,9 @@ export async function finishRental (req, res) {
         const rental = await db.query(`SELECT * FROM rentals WHERE ${id} === rentals.id`)
         
 
-        const delayFee = 
+        const delayFee = e
     } catch (err) {
         res.status(500).send(err.message)
     }   
 }
+
