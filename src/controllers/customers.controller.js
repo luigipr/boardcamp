@@ -49,7 +49,7 @@ export async function getCustomerById(req, res) {
 export async function postCustomer(req, res) {
 
     const {name, phone, cpf, birthday} = req.body;
-    if (!name || !phone || !cpf || !birthday) return res.sendStatus(400)
+    //if (!name || !phone || !cpf || !birthday) return res.sendStatus(400)
     try {
     const existe = await db.query(`SELECT * FROM customers WHERE customers.cpf = $1`, [cpf])
     if (existe.rowCount !== 0) return res.sendStatus(409)

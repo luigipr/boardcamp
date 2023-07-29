@@ -17,7 +17,7 @@ export async function postGame(req, res) {
     
 
     try {
-        if (!name || !image || !stockTotal || !pricePerDay) return res.sendStatus(400)
+        //if (!name || !image || !stockTotal || !pricePerDay) return res.sendStatus(400)
         const game = await db.query(`SELECT * FROM games WHERE name = $1`, [name])
         console.log(game)
         if (game.rowCount !== 0) return res.sendStatus(409)
