@@ -42,7 +42,7 @@ export async function postCustomer(req, res) {
     console.log(birthdayDate)
     
     await db.query(`INSERT INTO customers (name, phone, cpf, birthday) VALUES ($1, $2, $3, $4)`, [name, phone, cpf, birthdayDate])
-        //TO_CHAR(birthday, 'YYYY-MM-DD'))
+        //TO_CHAR(birthday, 'YYYY-MM-DD') as birthday) 
     res.sendStatus(201)
     } catch (err) {
     res.status(500).send(err.message)
