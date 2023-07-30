@@ -52,6 +52,7 @@ export async function finishRental (req, res) {
         const rental = (await db.query(`SELECT * FROM rentals WHERE $1 = id`, [id])).rows;
         if(!rental[0]) return res.sendStatus(404);
         console.log(rental)
+
         if(rental[0].returnDate !== null) res.sendStatus(400);
 
         const rentDate = dayjs(rental[0].rentDate);
@@ -64,7 +65,7 @@ export async function finishRental (req, res) {
         const delayFee = Math.max(0, delayDays) * pricePerDay;
         console.log(delayFee);
 
-        //await db.query(`UPDATE rentals SET returnDate = $1, delayFee = $2 WHERE $3 = id`, [returnDate, delayFee, id])
+        await db.query(`UPDATE rentals SET "returnDate" = $1, "delayFee" = $2 WHERE $3 = id`, [returnDate, delayFee, id])
 
         res.sendStatus(200)
     } catch (err) {
