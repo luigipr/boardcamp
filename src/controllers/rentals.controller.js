@@ -46,13 +46,14 @@ export async function postRental(req, res) {
 
 export async function finishRental (req, res) {
     const {id} = req. params;
-    if(!id) return res.sendStatus(404);
-    const returnDate = (dayjs().format('YYYY-MM-DD'));
-
+    const returnDate = dayjs().format('YYYY-MM-DD');
+ 
     try{
         const rental = (await db.query(`SELECT * FROM rentals WHERE $1 = id`, [id])).rows;
-        if(!rental) return res.sendStatus(404);
+        if(!rental[0]) return res.sendStatus(404);
+        console.log(rental)
         if(rental[0].returnDate !== null) res.sendStatus(400);
+
         const rentDate = dayjs(rental[0].rentDate);
         const daysRented = rental[0].daysRented;
         console.log(daysRented , returnDate);
@@ -63,7 +64,7 @@ export async function finishRental (req, res) {
         const delayFee = Math.max(0, delayDays) * pricePerDay;
         console.log(delayFee);
 
-        await db.query(`UPDATE rentals SET returnDate = $1, delayFee = $2 WHERE $3 = id`, [returnDate, delayFee, id])
+        //await db.query(`UPDATE rentals SET returnDate = $1, delayFee = $2 WHERE $3 = id`, [returnDate, delayFee, id])
 
         res.sendStatus(200)
     } catch (err) {
